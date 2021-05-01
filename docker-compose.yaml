@@ -1,0 +1,41 @@
+version: '3'
+
+services: 
+
+  node:
+    build: 
+      context: node
+    container_name: app
+    networks: 
+      - project-network
+    depends_on: 
+      - db
+    command: sh -c "/wait && node index.js"
+    environment:
+      - WAIT_HOSTS=db:3306
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+  nginx:
+    build:
+      context: nginx
+    container_name: nginx
+    networks: 
+      - project-network
+    depends_on: 
+      - node
+    ports: 
+      - "8080:80"
+ 
+  db:
+    build:
+      context: mysql
+    container_name: db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - project-network
+
+networks: 
+  project-network:
+    driver: bridge      
